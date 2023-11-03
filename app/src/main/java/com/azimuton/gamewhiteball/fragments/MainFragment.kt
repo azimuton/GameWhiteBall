@@ -28,10 +28,11 @@ class MainFragment : Fragment() {
             MAIN.navController.navigate(R.id.action_mainFragment_to_gameFragment)
         }
         binding.btGoogle.setOnClickListener {
-            MAIN.navController.navigate(R.id.action_mainFragment_to_webFragment)
+           MAIN.navController.navigate(R.id.action_mainFragment_to_webFragment)
         }
         binding.btHistory.setOnClickListener {
             MAIN.navController.navigate(R.id.action_mainFragment_to_historyFragment)
         }
+        binding.btClose.setOnClickListener { activity?.finishAffinity() }
     }
 }
