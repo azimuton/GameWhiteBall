@@ -1,25 +1,14 @@
 package com.azimuton.gamewhiteball.adapter
 
 import android.annotation.SuppressLint
-import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.Color
-import android.graphics.Paint
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.core.graphics.ColorUtils
-import androidx.core.graphics.toColor
-import androidx.core.graphics.toColorInt
-import androidx.core.net.toUri
 import androidx.recyclerview.widget.RecyclerView
 import com.azimuton.gamewhiteball.R
 import com.azimuton.gamewhiteball.database.History
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
 class HistoryAdapter(private val listHistory: List<History>) : RecyclerView.Adapter<HistoryAdapter.ViewHolder>() {
     class ViewHolder(itemView : View)  : RecyclerView.ViewHolder(itemView) {

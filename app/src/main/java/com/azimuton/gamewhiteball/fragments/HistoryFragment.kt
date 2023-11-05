@@ -14,9 +14,6 @@ import com.azimuton.gamewhiteball.adapter.HistoryAdapter
 import com.azimuton.gamewhiteball.database.AppRoomDatabase
 import com.azimuton.gamewhiteball.database.History
 import com.azimuton.gamewhiteball.databinding.FragmentHistoryBinding
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
 
 class HistoryFragment : Fragment() {

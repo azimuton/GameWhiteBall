@@ -4,7 +4,6 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
-import com.azimuton.gamewhiteball.MAIN
 
 class MainActivity : AppCompatActivity() {
     lateinit var navController : NavController

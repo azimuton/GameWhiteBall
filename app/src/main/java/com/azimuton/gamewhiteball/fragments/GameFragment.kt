@@ -7,19 +7,11 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.media.MediaPlayer
 import android.os.Bundle
-import android.os.Handler
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
-import androidx.core.graphics.ColorUtils
-import androidx.core.graphics.drawable.toBitmap
-import androidx.core.graphics.drawable.toBitmapOrNull
-import androidx.core.graphics.drawable.toDrawable
-import androidx.core.graphics.toColor
 import androidx.fragment.app.Fragment
 import com.azimuton.gamewhiteball.MAIN
 import com.azimuton.gamewhiteball.R
@@ -29,7 +21,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.Random
