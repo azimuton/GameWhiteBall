@@ -13,11 +13,18 @@ import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
+import androidx.core.graphics.ColorUtils
+import androidx.core.graphics.drawable.toBitmap
+import androidx.core.graphics.drawable.toBitmapOrNull
 import androidx.core.graphics.drawable.toDrawable
+import androidx.core.graphics.toColor
 import androidx.fragment.app.Fragment
 import com.azimuton.gamewhiteball.MAIN
 import com.azimuton.gamewhiteball.R
+import com.azimuton.gamewhiteball.database.AppRoomDatabase
+import com.azimuton.gamewhiteball.database.History
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -37,6 +44,7 @@ class GameFragment : Fragment() {
     private var randomColor : Int = 0
     private var score = 0
     private lateinit var musicPlayer: MediaPlayer
+    lateinit var database : AppRoomDatabase
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -45,13 +53,15 @@ class GameFragment : Fragment() {
         gameView = GameView(requireActivity())
         return gameView
     }
+    @OptIn(ExperimentalStdlibApi::class)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        database = AppRoomDatabase.getDatabase(requireActivity())
         playMusic()
-       //gameView.invalidate()
         // Случайный цвет фона
         randomColor = Color.argb(255, Random().nextInt(256), Random().nextInt(256), Random().nextInt(256))
+        randomColor.toHexString()
 
         val callback = object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
@@ -74,11 +84,11 @@ class GameFragment : Fragment() {
         private var blockY4 = 1100f
         private var blockX5 = 0f
         private var blockY5 = 1400f
-        private var blockSpeed1 = Random().nextInt(16).toFloat() +5
-        private var blockSpeed2 = Random().nextInt(16).toFloat() +5
-        private var blockSpeed3 = Random().nextInt(16).toFloat() +5
-        private var blockSpeed4 = Random().nextInt(16).toFloat() +5
-        private var blockSpeed5 = Random().nextInt(16).toFloat() +5
+        private var blockSpeed1 = Random().nextInt(36).toFloat() + 15
+        private var blockSpeed2 = Random().nextInt(36).toFloat() + 15
+        private var blockSpeed3 = Random().nextInt(36).toFloat() + 15
+        private var blockSpeed4 = Random().nextInt(36).toFloat() + 15
+        private var blockSpeed5 = Random().nextInt(36).toFloat() + 15
         private val bigCircleRadius = 500f
         private val smallCircleRadius = 300f
         private val ballRadius = 50f
@@ -88,7 +98,7 @@ class GameFragment : Fragment() {
         private var isTouching = false
         private var seconds = 0
 
-        @SuppressLint("DrawAllocation", "SimpleDateFormat")
+        @SuppressLint("DrawAllocation", "SimpleDateFormat", "ClickableViewAccessibility")
         override fun onDraw(canvas: Canvas) {
             super.onDraw(canvas)
             gameView.setBackgroundColor(randomColor)
@@ -122,23 +132,23 @@ class GameFragment : Fragment() {
             blockX4 += blockSpeed4
             blockX5 += blockSpeed5
             if (blockX1 >= width) {
-                blockSpeed1 = Random().nextInt(16).toFloat() + 5
+                blockSpeed1 = Random().nextInt(36).toFloat() + 15
                 blockX1 = 0f
             }
             if (blockX2 >= width) {
-                blockSpeed2 = Random().nextInt(16).toFloat() + 5
+                blockSpeed2 = Random().nextInt(36).toFloat() + 15
                 blockX2 = 0f
             }
             if (blockX3 >= width) {
-                blockSpeed3 = Random().nextInt(16).toFloat() + 5
+                blockSpeed3 = Random().nextInt(36).toFloat() + 15
                 blockX3 = 0f
             }
             if (blockX4 >= width) {
-                blockSpeed4 = Random().nextInt(16).toFloat() + 5
+                blockSpeed4 = Random().nextInt(36).toFloat() + 15
                 blockX4 = 0f
             }
             if (blockX5 >= width) {
-                blockSpeed5 = Random().nextInt(16).toFloat() + 5
+                blockSpeed5 = Random().nextInt(36).toFloat() + 15
                 blockX5 = 0f
             }
 
@@ -152,7 +162,6 @@ class GameFragment : Fragment() {
             if (distance4 < ballRadius || distance5 < ballRadius) {
                 // Если да, то увеличиваем счет
                 score += 1
-                //Log.d("TAG", "Score = $score")
             }
 
             // Проверяем, столкнулся ли шарик с черным блоком
@@ -161,7 +170,7 @@ class GameFragment : Fragment() {
             val distance1 = sqrt(dx1 * dx1 + dy1 * dy1)
             val dx2 = ballX - blockX2
             val dy2 = ballY - blockY2
-            val distance2 = sqrt(dx2* dx2 + dy2 * dy2)
+            val distance2 = sqrt(dx2 * dx2 + dy2 * dy2)
             val dx3 = ballX - blockX3
             val dy3 = ballY - blockY3
             val distance3 = sqrt(dx3 * dx3 + dy3 * dy3)
@@ -169,40 +178,39 @@ class GameFragment : Fragment() {
                 // Устанавливаем начальное положение шарика
                 ballX = width / 2f
                 ballY = height / 2f
-                // Обнуляем счёт
                 score = 0
             }
 
             // Обновляем значение времени
             val currentTime = System.currentTimeMillis()
-            // Преобразуем время в формат hh:mm:ss
             val timeInFormat = SimpleDateFormat("hh:mm:ss").format(currentTime)
             // Рисуем время на экране
             paint.color = Color.BLACK
             paint.textSize = 50f
-            canvas.drawText("Время : $timeInFormat", ((width/2 ).toFloat()), 100f, paint)
+            canvas.drawText("Время : $timeInFormat", ((width / 2).toFloat() - 200f), 100f, paint)
 
             // Рисуем секундомер
-             CoroutineScope(Dispatchers.IO).launch {
-                 delay(1000)
-                 seconds++
-                 time = String.format(Locale.getDefault(), "%02d:%02d:%02d",
-                            seconds / 3600, seconds % 3600 / 60, seconds % 60)
+            CoroutineScope(Dispatchers.Main).launch {
+                delay(1000)
+                seconds++
+                time = String.format(
+                    Locale.getDefault(), "%02d:%02d:%02d",
+                    seconds / 3600, seconds % 3600 / 60, seconds % 60
+                )
             }
             reportTime = "Время игры : $time"
             paint.color = Color.BLACK
             paint.textSize = 50f
-            canvas.drawText("$reportTime", ((width/2).toFloat()), 170f, paint)
-
-
-            invalidate()
+            canvas.drawText(reportTime, ((width / 2).toFloat() - 200f), 170f, paint)
 
             // Рисуем текст счетчика
             paint.color = Color.BLACK
             paint.textSize = 100f
-            canvas.drawText("$score", ((width/2 ).toFloat()), 300f, paint)
-        }
+            canvas.drawText("$score", ((width / 2).toFloat()), 300f, paint)
 
+            invalidate()
+        }
+        @SuppressLint("ClickableViewAccessibility")
         override fun onTouchEvent(event: MotionEvent): Boolean {
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
@@ -241,15 +249,13 @@ class GameFragment : Fragment() {
             }
             return true
         }
-
     }
     override fun onDestroyView() {
         super.onDestroyView()
-        Log.d("TAG", reportTime)
-        Log.d("TAG", randomColor.toString())
-        Log.d("TAG", score.toString())
         stopMusic()
         releaseMusicPlayer()
+        val history = History(count = score.toString(), color = randomColor.toString(), time = reportTime)
+        database.historyDao().insertHistory(history)
     }
     private fun initMusicPlayer() {
         musicPlayer = MediaPlayer.create(requireActivity(), R.raw.stranger)
